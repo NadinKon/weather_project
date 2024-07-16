@@ -1,0 +1,60 @@
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="all" />
+    <link rel="shortcut icon" href="{% static 'css/images/favicon.ico' %}" />
+</head>
+<body>
+<div class="shell">
+    <div class="border">
+
+        <div id="navigation">
+            <ul>
+                <li><a href="/" class="active">Home</a></li>
+                <li><a href="/admin">Log in</a></li>
+                <li><a href="/weather">Weather</a></li>
+            </ul>
+        </div>
+
+        <div id="main">
+            <div id="content" class="left">
+
+                <div class="projects">
+                    <h3>Weather today</h3>
+
+                    <div class="alert alert-danger">
+                        {% if weather_data %}
+                            <b>City:</b> {{ weather_data.city }}<br>
+                            <b>Temperature: </b> {{ weather_data.temperature }}<sup>o</sup><br>
+                            <b>Description: </b> {{ weather_data.description }}<br>
+                            <img src="http://openweathermap.org/img/w/{{ weather_data.icon }}.png" alt="Weather icon" class="img-thumbnail">
+                        {% elif error %}
+                            <p style="color: red;">{{ error }}</p>
+                        {% else %}
+                            <p>Enter a city name to get the weather forecast.</p>
+                        {% endif %}
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            <label for="city"><b>Weather in your city</b></label>
+                            <input type="text" id="city" class="form-control" name="city" placeholder="Enter city">
+                            <input type="submit" name="send" value="Get Weather" class="mt-2 btn btn-danger">
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="cl"></div>
+        </div>
+
+    </div>
+
+    <div id="footer">
+        <p class="copy right">Copyright &copy; 2023</p>
+    </div>
+</div>
+</body>
+</html>
