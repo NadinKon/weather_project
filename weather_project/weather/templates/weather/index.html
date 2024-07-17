@@ -10,7 +10,6 @@
 <body>
 <div class="shell">
     <div class="border">
-
         <div id="navigation">
             <ul>
                 <li><a href="/" class="active">Home</a></li>
@@ -21,24 +20,26 @@
 
         <div id="main">
             <div id="content" class="left">
-
                 <div class="projects">
                     <h3>Weather today</h3>
 
-                    <div class="alert alert-danger">
+                    <div class="weather-info">
                         {% if weather_data %}
-                            <b>City:</b> {{ weather_data.city }}<br>
-                            <b>Temperature: </b> {{ weather_data.temperature }}<sup>o</sup><br>
-                            <b>Description: </b> {{ weather_data.description }}<br>
-                            <img src="http://openweathermap.org/img/w/{{ weather_data.icon }}.png" alt="Weather icon" class="img-thumbnail">
+                            <p><b>City:</b> {{ weather_data.city }}</p>
+                            <p><b>Temperature:</b> {{ weather_data.temperature }}&deg;C</p>
+                            <p><b>Description:</b> {{ weather_data.description }}</p>
+                            <img src="http://openweathermap.org/img/w/{{ weather_data.icon }}.png" alt="Weather icon" class="weather-icon">
                         {% elif error %}
-                            <p style="color: red;">{{ error }}</p>
+                            <div class="alert alert-danger">
+                                <p>{{ error }}</p>
+                            </div>
                         {% else %}
                             <p>Enter a city name to get the weather forecast.</p>
                         {% endif %}
+
                         <form action="" method="post">
                             {% csrf_token %}
-                            <label for="city"><b>Weather in your city</b></label>
+                            <label for="city"><b>Weather in your city:</b></label>
                             <input type="text" id="city" class="form-control" name="city" placeholder="Enter city">
                             <input type="submit" name="send" value="Get Weather" class="mt-2 btn btn-danger">
                         </form>
@@ -53,7 +54,7 @@
     </div>
 
     <div id="footer">
-        <p class="copy right"> TestAPI 2024</p>
+        <p class="copy right">TestAPI 2024</p>
     </div>
 </div>
 </body>
