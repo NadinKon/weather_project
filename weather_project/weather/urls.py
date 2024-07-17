@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views import IndexView, SearchHistoryAPI
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', IndexView.as_view(), name='index'),
+    path('api/search-history/', SearchHistoryAPI.as_view(), name='search_history_api'),
 ]

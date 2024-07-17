@@ -1,27 +1,26 @@
-import requests
 from django.shortcuts import render
-from django.http import HttpResponseNotFound
-from django.contrib.sessions.models import Session
-from .models import SearchHistory
+from django.views import View
+from django.http import JsonResponse
+import requests
+from .models import SearchHistory, UserSearchHistory
 
-def index(request):
-    city = request.session.get('last_city')
-    weather_data = None
-    error = None
 
-    if request.method == 'POST':
+class IndexView(View):
+    template_name = 'weather/index.html'
+
+    def get(self, request):
+        return render(request, self.template_name, {})
+
+    def post(self, request):
+        weather_data = None
+        error = None
         city = request.POST.get('city')
 
         if city:
-            params = {
-                'q': city,
-                'units': 'metric',
-                'lang': 'en',
-                'appid': '1912624fd49c501f2986b6ff90fd4a0b'
-            }
-            response = requests.get('https://api.openweathermap.org/data/2.5/weather', params=params)
-
-            if response.status_code == 200:
+            try:
+                params = {'q': city, 'units': 'metric', 'lang': 'en', 'appid': '1912624fd49c501f2986b6ff90fd4a0b'}
+                response = requests.get('https://api.openweathermap.org/data/2.5/weather', params=params)
+                response.raise_for_status()
                 res = response.json()
                 weather_data = {
                     'city': city,
@@ -29,19 +28,28 @@ def index(request):
                     'description': res['weather'][0]['description'],
                     'icon': res['weather'][0]['icon']
                 }
-                request.session['last_city'] = city
+                # Update SearchHistory
+                search_history, created = SearchHistory.objects.get_or_create(city=city)
+                search_history.search_count += 1
+                search_history.save()
 
-                # Update search history
-                history, created = SearchHistory.objects.get_or_create(city=city)
-                history.search_count += 1
-                history.save()
-            else:
-                error = "Could not retrieve weather data for the specified city."
-        else:
-            error = "Please enter a city name."
+                # Save UserSearchHistory if user is authenticated
+                if request.user.is_authenticated:
+                    UserSearchHistory.objects.create(user=request.user, city=city)
 
-    context = {'weather_data': weather_data, 'error': error, 'last_city': city}
-    return render(request, 'weather/index.html', context)
+            except requests.exceptions.RequestException as e:
+                error = str(e)
 
-def page_not_found(request, exception):
-    return HttpResponseNotFound('<h1>Такой страницы нет</h1>')
+        context = {
+            'weather_data': weather_data,
+            'error': error
+        }
+
+        return render(request, self.template_name, context)
+
+
+class SearchHistoryAPI(View):
+    def get(self, request):
+        search_history = SearchHistory.objects.all()
+        data = {entry.city: entry.search_count for entry in search_history}
+        return JsonResponse(data)
